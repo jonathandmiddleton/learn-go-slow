@@ -1,0 +1,46 @@
+version: '3.6'
+services:
+    db:
+      image: postgres:12.1-alpine
+      container_name: pg-docker
+      ports:
+        - '5432:5432'
+      environment: 
+        - POSTGRES_USER=postgres
+        - POSTGRES_PASSWORD=admin
+        - POSTGRES_DB=postgres
+      volumes:
+        - ./db_data:/var/lib/postgresql/data/
+
+    api:
+      build:
+        dockerfile: Dockerfile
+        context: .
+      restart: unless-stopped
+      environment:
+        - ENGINE=postgres
+        - DB_USER=postgres
+        - DB_PASSWORD=admin
+        - DB_NAME=postgres
+        - DB_HOST=db
+      container_name: user-api
+      ports:
+        - 8080:3000
+      depends_on:
+        - db
+    
+    pgadmin:
+      image: dpage/pgadmin4
+      container_name: pgadmin
+      restart: always
+      environment:
+        PGADMIN_DEFAULT_EMAIL: "admin@admin.com"
+        PGADMIN_DEFAULT_PASSWORD: "test123!"
+        PGADMIN_LISTEN_PORT: 80
+      ports:
+        - "16543:80"
+      depends_on:
+        - db
+      
+volumes:
+  postgres_data:
